@@ -12,7 +12,7 @@ let package = Package(
             targets: ["Z33"]),
     ],
     dependencies: [
-        // Dependencies declare other packages that this package depends on.ekazjekze
+        // Dependencies declare other packages that this package depends on.
         .package(url: "https://github.com/adtrevor/ParserBuilder.git", .branch("asciiopti")),
     ],
     targets: [
