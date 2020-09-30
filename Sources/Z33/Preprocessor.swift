@@ -33,8 +33,8 @@ struct Preprocessor {
     let context: Context
     
     func process() throws -> CodeMap {
-        let parts = try self.extractTokens()
-        let tree = try self.buildTree(from: parts)
+        let tokens = try self.extractTokens()
+        let tree = try self.buildTree(from: tokens)
         try self.evaluate(ast: tree)
         let codeMap = self.evaluateToCodeMap(tree)
         self.context.codeMaps[self.uuid] = codeMap
@@ -45,7 +45,7 @@ struct Preprocessor {
     func extractTokens() throws -> [Token] {
         var currentIndex = program.startIndex
         var currentCodeSectionStartIndex = currentIndex
-        var parts = [Token]()
+        var tokens = [Token]()
         var isAtStart = true
         while currentIndex != program.endIndex {
             var extractor = Extractor(program[currentIndex...])
@@ -112,18 +112,18 @@ struct Preprocessor {
             
             // We add the code that came before in its own section
             if beforePreprocessorParse > currentCodeSectionStartIndex {
-                parts.append(Token(range: currentCodeSectionStartIndex..<beforePreprocessorParse, value: .code))
+                tokens.append(Token(range: currentCodeSectionStartIndex..<beforePreprocessorParse, value: .code))
             }
             
             currentCodeSectionStartIndex = endOfLine?.endIndex ?? extractor.currentIndex
-            parts.append(parsedPart)
+            tokens.append(parsedPart)
         }
         
         if currentIndex > currentCodeSectionStartIndex {
-            parts.append(Token(range: currentCodeSectionStartIndex..<currentIndex, value: .code))
+            tokens.append(Token(range: currentCodeSectionStartIndex..<currentIndex, value: .code))
         }
         
-        return parts
+        return tokens
     }
     
     struct Token {
