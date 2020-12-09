@@ -1,7 +1,7 @@
 struct Memory {
     
     let size: Int
-    var storage: [Int32]
+    var storage: [UInt32]
     
     init(size: Int) {
         self.size = size

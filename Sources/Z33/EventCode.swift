@@ -1,5 +1,5 @@
 /// Possible event codes for interruptions and exceptions
-enum EventCode: Int, Error {
+public enum EventCode: Int, Error {
     case hardwareInterrupt = 0
     case divisionByZero = 1
     case invalidInstruction = 2

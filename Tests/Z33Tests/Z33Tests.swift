@@ -4,6 +4,69 @@ import Foundation
 
 final class Z33Tests: XCTestCase {
     
+    typealias SV = StandardVariation
+    
+    func compute<T: BinaryRegisterModificator>(_ type: T.Type, lhs: Int32, rhs: Int32) throws -> Int32 where T.Processor == SV {
+        var fakeProc = StandardVariation.makeAtDefaultState()
+        return try Int32(bitPattern: T.compute(input: UInt32(bitPattern: lhs), destination: UInt32(bitPattern: rhs), processor: &fakeProc))
+        
+    }
+    
+    func testAdd() throws {
+        XCTAssertEqual(try compute(Add.self, lhs: 0, rhs: 0), 0)
+        XCTAssertEqual(try compute(Add.self, lhs: 1, rhs: 0), 1)
+        XCTAssertEqual(try compute(Add.self, lhs: 0, rhs: 1), 1)
+        XCTAssertEqual(try compute(Add.self, lhs: 0, rhs: -1), -1)
+        XCTAssertEqual(try compute(Add.self, lhs: -1, rhs: -1), -2)
+        XCTAssertEqual(try compute(Add.self, lhs: 1, rhs: 1), 2)
+    }
+    
+    func testAddEncode() {
+//        let add = Add<SV>(indirect: \.b, offset: -512, destination: \.a)
+        let add = Add<SV>(direct: 262143, destination: \.a)
+        let encoded = add.encodeToBinary()!
+        let bits = String(encoded, radix: 2)
+        print(String(repeatElement("0", count: 64 - bits.count)) + bits)
+        print(Add<SV>.decodeFromBinary(encoded)!.assemblyValue)
+        print(add.assemblyValue)
+        XCTAssertEqual(Add<SV>.decodeFromBinary(encoded), add)
+        print("Done")
+    }
+    
+    func testSub() throws {
+        XCTAssertEqual(try compute(Sub.self, lhs: 0, rhs: 0), 0) // Z : ==
+        XCTAssertEqual(try compute(Sub.self, lhs: -1, rhs: 0), 1) // C : <
+        XCTAssertEqual(try compute(Sub.self, lhs: 1, rhs: 0), -1) // C O : >
+        XCTAssertEqual(try compute(Sub.self, lhs: 5, rhs: 5), 0) // Z : ==
+        XCTAssertEqual(try compute(Sub.self, lhs: 5, rhs: 0), -5) // CO : >
+        XCTAssertEqual(try compute(Sub.self, lhs: 10, rhs: 5), -5) // CO : >
+        XCTAssertEqual(try compute(Sub.self, lhs: 5, rhs: 10), 5) // NOTHING : <
+        XCTAssertEqual(try compute(Sub.self, lhs: -10, rhs: -5), 5) // O : <
+        XCTAssertEqual(try compute(Sub.self, lhs: -5, rhs: -10), -5) // C : >
+        XCTAssertEqual(try compute(Sub.self, lhs: -12, rhs: -2), 10) // O : <
+        XCTAssertEqual(try compute(Sub.self, lhs: -2, rhs: -12), -10) // C : >
+        XCTAssertEqual(try compute(Sub.self, lhs: -2, rhs: 12), 14) // C : <
+        XCTAssertEqual(try compute(Sub.self, lhs: 2, rhs: -12), -14) // NOTHING : >
+        
+        
+    }
+    
+    func testRunner() throws {
+        Runner<StandardVariation>().rom {
+            Jmp(immediate: 500)
+        }.interruptHandler {
+            Jmp(immediate: 500)
+        }.code(at: 500) {
+            Ld(immediate: 5, destination: \.a)
+            Cmp(immediate: 1, destination: \.a)
+            Jmp(immediate: 500)
+            Jge(direct: 526) // casparticulier
+            Sub(immediate: 1, destination: \.a)
+            // Push(register: \.a)
+            Jmp(immediate: 500)
+        }.printSteps()
+    }
+    
     func testRangeConverter() {
         let string = "HelloMyFriend"
         var converter = CodeMap(string: string)
@@ -13,9 +76,17 @@ final class Z33Tests: XCTestCase {
         debugPrint(converter)
     }
     
-    typealias SV = StandardVariation
+    
     
     struct FooInstruction<Processor: ProcessorProtocol>: Instruction {
+        func encodeToBinary() -> UInt64 {
+            fatalError()
+        }
+        
+        static func decodeFromBinary(_ binaryPattern: UInt64) -> Z33Tests.FooInstruction<Processor>? {
+            fatalError()
+        }
+        
         var arguments: ArgumentsStorage<Processor>
         
         static var name: String { "foo" }
@@ -24,7 +95,7 @@ final class Z33Tests: XCTestCase {
         
         func execute(on processor: inout Processor) throws {}
     }
-    
+    /*
     func testFoo() throws {
         guard let value = try FooInstruction<SV>.parse(from: "foo 2   , %b") else {
             XCTFail("Couldn't parse value")
@@ -47,7 +118,7 @@ final class Z33Tests: XCTestCase {
         XCTAssertEqual(lhsName, \.a)
         XCTAssertEqual(rhsName, \.b)
     }
-    
+    */
     
     
     struct TestFileStore: FileResolver {

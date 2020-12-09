@@ -1,16 +1,36 @@
 /// An `OptionSet` that represents the possible values for the flags stored in the status register (SR)
-struct SRValue: OptionSet {
-    let rawValue: Int32
+public struct SRValue: OptionSet {
+    public init(rawValue: UInt32) {
+        self.rawValue = rawValue
+    }
+    
+    public let rawValue: UInt32
     
     // MARK: User space and kernel space
-    static let carry = SRValue(rawValue: 1 << 0)
-    static let zero = SRValue(rawValue: 1 << 1)
-    static let negative = SRValue(rawValue: 1 << 2)
-    static let overflow = SRValue(rawValue: 1 << 3)
+    public static let carry = SRValue(rawValue: 1 << 0)
+    public static let zero = SRValue(rawValue: 1 << 1)
+    public static let negative = SRValue(rawValue: 1 << 2)
+    public static let overflow = SRValue(rawValue: 1 << 3)
     
     // MARK: Kernel space only
-    static let interruptEnable = SRValue(rawValue: 1 << 8)
-    static let supervisor = SRValue(rawValue: 1 << 9)
+    public static let interruptEnable = SRValue(rawValue: 1 << 8)
+    public static let supervisor = SRValue(rawValue: 1 << 9)
+    
+    public mutating func updateZeroNegativeFlags(for result: UInt32) {
+        let result = Int32(bitPattern: result)
+        
+        if result == 0 {
+            self.insert(.zero)
+        } else {
+            self.remove(.zero)
+        }
+        
+        if result < 0 {
+            self.insert(.negative)
+        } else {
+            self.remove(.negative)
+        }
+    }
 }
 
 /// Namespace that holds option sets representing status and command registers flags for the keyboard
@@ -71,7 +91,6 @@ enum Disk {
         /// Starts a read request
         static let read = SRValue(rawValue: 1 << 1)
         
-        // FIXME: What's C/H/S?
         /// Indicates that data register contains C/H/S location
         static let location = SRValue(rawValue: 1 << 2)
         

@@ -7,6 +7,7 @@ let package = Package(
     name: "Z33",
     products: [
         // Products define the executables and libraries a package produces, and make them visible to other packages.
+        .executable(name: "Z33Interpreter", targets: ["Z33Interpreter"]),
         .library(
             name: "Z33",
             targets: ["Z33"]),
@@ -21,6 +22,11 @@ let package = Package(
         .target(
             name: "Z33",
             dependencies: ["ParserBuilder"]),
+        .target(name: "Z33Interpreter",
+                dependencies: ["Z33"],
+                swiftSettings: [
+                    .unsafeFlags(["-cross-module-optimization"], .when(configuration: .release))
+                ]),
         .testTarget(
             name: "Z33Tests",
             dependencies: ["Z33"]),

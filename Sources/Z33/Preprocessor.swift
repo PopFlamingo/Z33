@@ -625,7 +625,7 @@ struct Preprocessor {
         }
     }
     
-    enum PreprocessorExpression: CustomStringConvertible {
+    enum PreprocessorExpression: CustomStringConvertible, Equatable {
         case defined(symbol: String)
         case notdefined(symbol: String)
         
@@ -668,7 +668,7 @@ struct Preprocessor {
         }
     }
     
-    struct If: Statement {
+    struct If: Statement, Equatable {
         var expression: PreprocessorExpression
         
         static func parse(from substring: Substring) throws -> ParseResult<Preprocessor.If>? {
@@ -757,9 +757,9 @@ struct Preprocessor {
     }
 }
 
-enum DefineValue: CustomStringConvertible {
+enum DefineValue: CustomStringConvertible, Equatable {
     case none
-    case number(Int32)
+    case number(UInt32)
     case string(String)
     
     var description: String {

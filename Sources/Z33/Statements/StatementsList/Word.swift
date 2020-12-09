@@ -1,7 +1,7 @@
 import ParserBuilder
 
 struct Word: Statement {
-    var value: Int32
+    var value: UInt32
     
     static func parse(from substring: Substring) throws -> ParseResult<Word>? {
         var extractor = Extractor(substring)

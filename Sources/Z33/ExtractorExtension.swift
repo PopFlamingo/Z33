@@ -37,7 +37,7 @@ extension Extractor {
     }
     
     @discardableResult
-    mutating func popNumberLiteral() throws -> Int32? {
+    mutating func popNumberLiteral() throws -> UInt32? {
         let start = self.currentIndex
         let decimalNumber = Matcher("-").optional() + CommonMatchers.number.count(1...)
         let hexadecimalNumber = (CommonMatchers.number || Matcher("a"..."f") || Matcher("A"..."F")).count(1...)
@@ -52,7 +52,7 @@ extension Extractor {
                 throw ParseError(description: "Literal value is too large", location: .range(start..<self.currentIndex))
             }
             
-            return .init(bitPattern: bitPattern)
+            return bitPattern
         } else if self.popCurrent(with: "0x") != nil {
             guard let hexadecimalLiteral = self.popCurrent(with: hexadecimalNumber) else {
                 throw ParseError(description: "Invalid hexadecimal literal", location: .single(start))
@@ -62,16 +62,17 @@ extension Extractor {
                 throw ParseError(description: "Literal value is too large", location: .range(start..<self.currentIndex))
             }
             
-            return .init(bitPattern: bitPattern)
+            return bitPattern
         } else {
             guard let decimalLiteral = self.popCurrent(with: decimalNumber) else {
                 return nil
             }
             
+            // FIXME: Maybe add special handling for usigned value literals
             guard let extractedValue = Int32(decimalLiteral) else {
                 throw ParseError(description: "Literal value is too large", location: .range(start..<self.currentIndex))
             }
-            return extractedValue
+            return UInt32(bitPattern: extractedValue)
         }
     }
 }
