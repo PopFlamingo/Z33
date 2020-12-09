@@ -78,10 +78,14 @@ public class AnyInstruction<Processor: ProcessorProtocol> {
         self._encodeToBinary = {
             return instruction.encodeToBinary()
         }
+        
+        self.isReset = T.isReset
     }
     
     private let _execute: (inout Processor) throws -> ()
     private let _encodeToBinary: ()->UInt64?
+    
+    let isReset: Bool
     
     @inline(__always)
     public func execute(on processor: inout Processor) throws {

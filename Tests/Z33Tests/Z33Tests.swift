@@ -64,7 +64,7 @@ final class Z33Tests: XCTestCase {
             Sub(immediate: 1, destination: \.a)
             // Push(register: \.a)
             Jmp(immediate: 500)
-        }.printSteps()
+        }.run()
     }
     
     func testRangeConverter() {

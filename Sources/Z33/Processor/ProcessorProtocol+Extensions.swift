@@ -2,22 +2,25 @@
 extension ProcessorProtocol {
     
     /// Executes the instruction placed at the address pointed by the program counter register
-    ///
-    /// This function will throw if an exception is raised while executing the current instruction
     @inline(__always)
-    public mutating func executeCurrentInstruction(_ cache: [AnyInstruction<Self>?]) throws {
-        let pc = self.registers.pc
+    public mutating func executeCurrentInstruction(context: inout ExecutionContext<Self>) -> ExecutionStepResult {
+        let instructionAddress = self.physicalAddress(from: registers.pc)
         
         do {
-            if let instruction = cache[Int(pc)] {
+            if let instruction = context.cachedInstruction(at: instructionAddress) {
+                guard !instruction.isReset else {
+                    try instruction.execute(on: &self)
+                    return .reset
+                }
                 let pcBefore = self.registers.pc
                 try instruction.execute(on: &self)
                 if self.registers.pc == pcBefore {
                     self.registers.pc += 2
                 }
+                return .continue
             } else {
-                // FIXME: Should probably throw something else
-                throw Exception(eventCode: .invalidInstruction)
+                // FIXME: Should probably return something else
+                return .exception(Exception(eventCode: .invalidInstruction))
             }
         } catch {
             if let exception = error as? Exception {
@@ -26,6 +29,7 @@ extension ProcessorProtocol {
                 try! self.writeMemory(value: UInt32(exception.eventCode.rawValue), at: 102)
                 self.registers.srFlags.insert(.supervisor)
                 self.registers.pc = 200
+                return .continue
             } else {
                 fatalError("Unexpected error at \(#fileID):\(#function) : \(error)")
             }

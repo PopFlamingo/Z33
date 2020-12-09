@@ -17,7 +17,7 @@ public struct StandardVariation: ProcessorProtocol {
     
     @inline(__always)
     mutating public func readMemory(at address: UInt32) throws -> UInt32 {
-        guard address >= 0 && address < maxMemoryAddress else {
+        guard address >= 0 && address < physicalMemorySize else {
             throw EventCode.invalidMemoryAccess
         }
         return memory.storage[Int(address)]
@@ -25,11 +25,16 @@ public struct StandardVariation: ProcessorProtocol {
     
     @inline(__always)
     mutating public func writeMemory(value: UInt32, at address: UInt32) throws {
-        guard address >= 0 && address < maxMemoryAddress else {
+        guard address >= 0 && address < physicalMemorySize else {
             throw EventCode.invalidMemoryAccess
         }
         
         memory.storage[Int(address)] = value
+    }
+    
+    public func physicalAddress(from virtual: UInt32) -> UInt32 {
+        // There is no support for virtual memory on the standard variation
+        return virtual
     }
     
     
@@ -59,7 +64,7 @@ public struct StandardVariation: ProcessorProtocol {
         }
     }
     
-    public var maxMemoryAddress: UInt32 {
+    public var physicalMemorySize: UInt32 {
         return UInt32(memory.size)
     }
     

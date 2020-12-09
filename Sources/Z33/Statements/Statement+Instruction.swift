@@ -12,6 +12,7 @@ public protocol Instruction: Statement {
     static var name: String { get }
     static var opcode: UInt8 { get }
     static var isPrivileged: Bool { get }
+    static var isReset: Bool { get }
     static var reversedMachineCodeArguments: Bool { get }
     static var argumentsDescription: ArgumentsDescription { get }
     

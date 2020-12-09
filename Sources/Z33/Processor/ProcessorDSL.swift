@@ -39,14 +39,8 @@ public class Runner<Processor: ProcessorProtocol> {
         return self.code(at: 200, codeBuilder)
     }
     
-    class Foo {
-        
-    }
-    
-    public func printSteps() {
-        var count = 0
-        let max = 100_000_000
-        let buffer: [AnyInstruction<Processor>?] = (0..<10_000).map { _ in
+    public func run() {
+        let cache: [AnyInstruction<Processor>?] = (0..<processor.physicalMemorySize).map { _ in
             let pc = processor.registers.pc
             let binaryInstructionMSBs = (try? processor.readMemory(at: pc)) ?? 0
             let binaryInstructionLSBs = (try? processor.readMemory(at: pc + 1)) ?? 0
@@ -59,19 +53,15 @@ public class Runner<Processor: ProcessorProtocol> {
             }
         }
         
-        
-        
-                
+        var context = ExecutionContext(cache: cache)
+
         processor.registers.pc = 0
-        while count != max {
-            try? processor.executeCurrentInstruction(buffer)
-            count += 1
-        }
         
-//        buffer.deallocate()
+        var result = ExecutionStepResult.continue
+        while case .continue = result {
+            result = processor.executeCurrentInstruction(context: &context)
+        }
     }
-    
-    
 }
 
 @_functionBuilder

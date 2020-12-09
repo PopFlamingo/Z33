@@ -384,7 +384,7 @@ public struct Push<Processor: ProcessorProtocol>: ImmediateUnaryInstruction, Reg
 }
 
 public struct Reset<Processor: ProcessorProtocol>: NullaryInstruction {
-    public init(arguments: ArgumentsStorage<Processor>) {
+    public init(arguments: ArgumentsStorage<Processor> = .none) {
         self.arguments = arguments
     }
     
@@ -395,6 +395,10 @@ public struct Reset<Processor: ProcessorProtocol>: NullaryInstruction {
     
     public func execute(on processor: inout Processor) throws {
         processor = .makeAtDefaultState()
+    }
+    
+    public static var isReset: Bool {
+        return true
     }
 }
 

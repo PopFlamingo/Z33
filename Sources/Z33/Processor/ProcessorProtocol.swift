@@ -3,8 +3,6 @@
 /// This protocol guarantees the presence of common registers as well as the
 /// presence of memory I/O operations
 public protocol ProcessorProtocol: CustomStringConvertible {
-    mutating func executeCurrentInstruction(_ cache: [AnyInstruction<Self>?]) throws
-    
     /// The type that stores the registers for this processor
     ///
     /// This type conforms to `RegistersStorageProtocol` which guarantees the presence
@@ -47,7 +45,8 @@ public protocol ProcessorProtocol: CustomStringConvertible {
     
     mutating func readMemory(at address: UInt32) throws -> UInt32
     mutating func writeMemory(value: UInt32, at address: UInt32) throws
-    var maxMemoryAddress: UInt32 { get }
+    func physicalAddress(from virtual: UInt32) -> UInt32
+    var physicalMemorySize: UInt32 { get }
     
     // MARK: - Registers access rights
     // Defines the sets of registers that can only be read/written in supervisor mode
@@ -65,6 +64,24 @@ public protocol ProcessorProtocol: CustomStringConvertible {
     
     mutating func writeData(at argument: Argument<Self>, value: UInt32) throws
     
+    // MARK: - Execution
+    mutating func executeCurrentInstruction(context: inout ExecutionContext<Self>) -> ExecutionStepResult
+}
+
+public struct ExecutionContext<Processor: ProcessorProtocol> {
+    @inlinable
+    public func cachedInstruction(at physicalAddress: UInt32) -> AnyInstruction<Processor>? {
+        return cache[Int(physicalAddress)]
+    }
+    
+    @usableFromInline
+    var cache: [AnyInstruction<Processor>?]
+}
+
+public enum ExecutionStepResult {
+    case `continue`
+    case reset
+    case exception(Exception)
 }
 
 

@@ -1,21 +1,20 @@
 import Z33
-import Darwin
 
+let count = UInt32(CommandLine.arguments[1])!
+
+print("Will stop at \(count)")
 
 Runner<StandardVariation>().rom {
     Jmp(immediate: 500)
-}.interruptHandler {
-    Jmp(immediate: 500)
 }.code(at: 500) {
-    Ld(immediate: 5, destination: \.a)
-    Ld(immediate: 5, destination: \.a)
-    Ld(immediate: 5, destination: \.a)
+    Ld(direct: 505, destination: \.a)
+    Ld(direct: 505, destination: \.a)
+    Ld(direct: 505, destination: \.a)
     Cmp(immediate: 1, destination: \.a)
-    Cmp(immediate: 1, destination: \.a)
-    Cmp(immediate: 1, destination: \.a)
-    Jmp(immediate: 500)
-    Jge(direct: 526) // casparticulier
-    Sub(immediate: 1, destination: \.a)
-    // Push(register: \.a)
-    Jmp(immediate: 500)
-}.printSteps()
+    Cmp(immediate: 2, destination: \.a)
+    Cmp(immediate: 3, destination: \.a)
+    Add(immediate: 1, destination: \.b)
+    Cmp(immediate: count, destination: \.b)
+    Jne(immediate: 500)
+    Reset()
+}.run()

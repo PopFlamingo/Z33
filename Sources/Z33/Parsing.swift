@@ -158,8 +158,11 @@ extension Instruction {
             return ParseResult(value: .init(arguments: .binary(lhs, rhs)), advancedIndex: extractor.currentIndex)
         }
     }
-    public   
-    static var isPrivileged: Bool {
+    public static var isPrivileged: Bool {
+        return false
+    }
+    
+    public static var isReset: Bool {
         return false
     }
     
