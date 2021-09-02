@@ -1,4 +1,4 @@
-protocol ProgramStateDelegate: class {
+protocol ProgramStateDelegate: AnyObject {
     
 }
 

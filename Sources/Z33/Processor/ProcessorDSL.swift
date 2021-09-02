@@ -64,7 +64,7 @@ public class Runner<Processor: ProcessorProtocol> {
     }
 }
 
-@_functionBuilder
+@resultBuilder
 public struct AssemblyBuilder<Processor: ProcessorProtocol> {
     @inline(__always)
     public static func buildExpression<I: Instruction>(_ expression: I) -> AnyInstruction<Processor> where I.Processor == Processor {

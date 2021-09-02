@@ -1,5 +1,5 @@
 
-@_functionBuilder
+@resultBuilder
 struct ProgramBuilder<Arch: ProcessorProtocol> {
     
     static func buildBlock(_ expression: Erased...) -> Any {
